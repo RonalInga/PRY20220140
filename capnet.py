@@ -1,12 +1,13 @@
+from turtle import title
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
-from utils import combine_images
+from utils import combine_images, plot_image
 from PIL import Image
-from capsulelayers import CapsuleLayer, PrimaryCap, Length, Mask
+from caplayers import CapsuleLayer, PrimaryCap, Length, Mask
 
 K.set_image_data_format('channels_last')
 
@@ -105,7 +106,8 @@ def train(model,  # type: models.Model
 #Finish implementation-----------------------------------------------------------------------------
 def test(model, data, args):
     x_test, y_test = data
-    y_pred, x_recon = model.predict(x_test, batch_size=100)
+    # y_pred, x_recon = model.predict(x_test, batch_size=100)
+    y_pred, x_recon = model.predict(x_test, batch_size=args.batch_size)
     print('-' * 30 + 'Begin: test' + '-' * 30)
     print('Test acc:', np.sum(np.argmax(y_pred, 1) == np.argmax(y_test, 1)) / y_test.shape[0])
 
@@ -117,7 +119,6 @@ def test(model, data, args):
     print('-' * 30 + 'End: test' + '-' * 30)
     plt.imshow(plt.imread(args.save_dir + "/real_and_recon.png"))
     plt.show()
-
 
 def manipulate_latent(model, data, args):
     print('-' * 30 + 'Begin: manipulate' + '-' * 30)
@@ -145,18 +146,51 @@ def manipulate_latent(model, data, args):
 #To finish in the test process----------------------------------------------------------------
 
 def load_dataset():
-    #shuffled and split between train and test sets
-    from tensorflow.keras.datasets import mnist #For now just mnist
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+   
+    #------------------------------------------------
+    from pre_process import read_gray, split, feature_preprocessing, label_preprocessing, DIM
+    #Values for testing and training purposes
+    image_data, label_data=read_gray()
+    train_images,train_labels,validation_images,validation_labels,test_images,test_labels=split(image_data,label_data)
+    train_images,validation_images,test_images=feature_preprocessing(train_images,validation_images,test_images)
+    train_labels,validation_labels,test_labels=label_preprocessing(train_labels,validation_labels,test_labels)
+    print('-'*30, 'x_train', train_images.shape)
+    print('-'*30, 'y_train', validation_images.shape)
 
-    print('-'*30, 'x_train', x_train.shape)
-    x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.
-    x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.
-    y_train = to_categorical(y_train.astype('float32'))
-    y_test = to_categorical(y_test.astype('float32'))
-    #print('-'*30, 'y_train', y_train.shape)
+    # Some test to see different actions    
+    plot_image(train_images[90].reshape((DIM, DIM)))
+    print(train_labels[90])
+    plot_image(train_images[95].reshape((DIM, DIM)))
+    print(train_labels[95])
     
-    return (x_train, y_train), (x_test, y_test)
+    return (train_images, train_labels), (validation_images, validation_labels), (test_images, test_labels)
+
+def single_predict(model, args):
+    import  random
+    path = "C:/Users/Elizabeth/Desktop/Sistema_deteccion_distractores_conductores/test"
+    file_names= os.listdir(path)
+
+    file = random.choice(file_names)
+
+    # Preprocess
+    from pre_process import read_single_gray, get_name
+    img, img_proc = read_single_gray(path+"/"+file, args)
+
+    y_pred, x_recon = model.predict(img_proc, batch_size=args.batch_size)
+    print("="*30)
+    print("img", img.shape)
+    print("img_proc", img_proc[0].shape)
+    print("x_recon", x_recon[0].shape)
+    print("y_pred", y_pred.shape)
+    print("Resulted predict:", np.argmax(y_pred[0]))
+    print("Resulted predict:", get_name(np.argmax(y_pred[0])))
+
+    img = combine_images(np.stack([img, img_proc[0], x_recon[0]])) # Getting the first image
+    image = img * 255
+    Image.fromarray(image.astype(np.uint8)).save(args.save_dir + "/single_predict.png")
+
+    plt.imshow(plt.imread(args.save_dir + "/single_predict.png"))
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -166,9 +200,9 @@ if __name__ == "__main__":
     from tensorflow.keras import callbacks
 
     # setting the hyper parameters
-    parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=5, type=int)
-    parser.add_argument('--batch_size', default=100, type=int)
+    parser = argparse.ArgumentParser(description="Capsule Network on Driven Distracted Dataset.")
+    parser.add_argument('--epochs', default=5, type=int) #Modify the Number of Epochs for different tests
+    parser.add_argument('--batch_size', default=50, type=int)
     parser.add_argument('--lr', default=0.001, type=float,
                         help="Initial learning rate")
     parser.add_argument('--lr_decay', default=0.9, type=float,
@@ -182,35 +216,45 @@ if __name__ == "__main__":
     parser.add_argument('--debug', action='store_true',
                         help="Save weights by TensorBoard")
     parser.add_argument('--save_dir', default='./result')
-    parser.add_argument('-t', '--testing', action='store_true',
+    parser.add_argument('-t', '--testing', action='store_true', default=None,
                         help="Test the trained model on testing dataset")
     parser.add_argument('--digit', default=5, type=int,
                         help="Digit to manipulate")
     parser.add_argument('-w', '--weights', default=None,
                         help="The path of the saved weights. Should be specified when testing")
+    parser.add_argument('-sp', '--singlepredict', default=None, type=str, 
+                        help="choose an image to predict")
     args = parser.parse_args()
     print(args)
 
     if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
+        os.makedirs(args.save_dir)    
 
-    # load data
-    (x_train, y_train), (x_test, y_test) = load_dataset()
+    from pre_process import DIM
 
-    # define model
-    model, eval_model, manipulate_model = CapsNet(input_shape=x_train.shape[1:],
-                                                  n_class=len(np.unique(np.argmax(y_train, 1))),
+    model, eval_model, manipulate_model = CapsNet(input_shape=(DIM, DIM, 1),
+                                                  n_class=10,
                                                   routings=args.routings,
                                                   batch_size=args.batch_size)
+
     model.summary()
 
     # train or test
     if args.weights is not None:  # init the model weights with provided one
         model.load_weights(args.weights)
-    if not args.testing:
-        train(model=model, data=((x_train, y_train), (x_test, y_test)), args=args)
-    else:  # as long as weights are given, will run testing
+    
+    if args.testing is not None:
+        # as long as weights are given, will run testing
         if args.weights is None:
             print('No weights are provided. Will test using random initialized weights.')
         #manipulate_latent(manipulate_model, (x_test, y_test), args)
+        (x_train, y_train), (x_val, y_val), (x_test, y_test) = load_dataset()
         test(model=eval_model, data=(x_test, y_test), args=args)
+    
+    elif args.singlepredict is not None:
+        single_predict(model=eval_model, args=args)
+    else:  
+        # load data
+        (x_train, y_train), (x_val, y_val), (x_test, y_test) = load_dataset()
+        train(model=model, data=((x_train, y_train), (x_val, y_val)), args=args)
+        
