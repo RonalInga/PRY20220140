@@ -166,14 +166,14 @@ def load_dataset():
     return (train_images, train_labels), (validation_images, validation_labels), (test_images, test_labels)
 
 def single_predict(model, args):
+    from pre_process import read_single_gray, get_name
     import  random
     path = "C:/Users/Elizabeth/Desktop/Sistema_deteccion_distractores_conductores/test"
     file_names= os.listdir(path)
-
     file = random.choice(file_names)
 
     # Preprocess
-    from pre_process import read_single_gray, get_name
+   
     img, img_proc = read_single_gray(path+"/"+file, args)
 
     y_pred, x_recon = model.predict(img_proc, batch_size=args.batch_size)
@@ -185,6 +185,9 @@ def single_predict(model, args):
     print("Resulted predict:", np.argmax(y_pred[0]))
     print("Resulted predict:", get_name(np.argmax(y_pred[0])))
 
+    plt.imshow(img)
+    plt.show()
+    
     img = combine_images(np.stack([img, img_proc[0], x_recon[0]])) # Getting the first image
     image = img * 255
     Image.fromarray(image.astype(np.uint8)).save(args.save_dir + "/single_predict.png")
@@ -222,7 +225,7 @@ if __name__ == "__main__":
                         help="Digit to manipulate")
     parser.add_argument('-w', '--weights', default=None,
                         help="The path of the saved weights. Should be specified when testing")
-    parser.add_argument('-sp', '--singlepredict', default=None, type=str, 
+    parser.add_argument('-sp', '--singlepredict', action='store_true', default=None,
                         help="choose an image to predict")
     args = parser.parse_args()
     print(args)
