@@ -3,6 +3,11 @@ from matplotlib import pyplot as plt
 import math
 import pandas as pd
 
+def plot_image(image):
+    image = image * 255
+    plt.imshow(image)
+    plt.show()
+    
 def plot_log(filename, show=True):
 
     data = pd.read_csv(filename)
