@@ -1,7 +1,5 @@
 Comandos:
 - pip install tensorflow: Para instalar tensorflow
 - python capnet.py: Para entrenar el modelo
-- python capnet.py --weight ./result/trained_model.h5 --test : Para ejecutar el modelo almacenado en './result/trained_model.h5' y ejecutar las pruebas
-- python capnet.py --weight ./result/trained_model.h5 --singlepredict: Para ejecutar la prueba unitaria con el modelo cargado (Driver)
-
-Hora de inicio: 4:30 am
+- python capnet.py --weight ./results/trained_model.h5 --test : Para ejecutar el modelo almacenado en './result/trained_model.h5' y ejecutar las pruebas
+- python capnet.py --weight ./results/trained_model.h5 --singlepredict: Para ejecutar la prueba unitaria con el modelo cargado (Driver)
