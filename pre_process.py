@@ -55,7 +55,8 @@ def read_gray():
 
 def read_single_gray(path, args):
     img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    img_proc = cv2.resize(img, img_shape)
+
+    img_proc = cv2.resize(img, img_shape) 
     img_proc = img_proc.reshape((DIM, DIM, 1))
     img_proc = np.full((args.batch_size, DIM, DIM, 1), img_proc)
     #batch_size

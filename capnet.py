@@ -166,25 +166,14 @@ def load_dataset():
     return (train_images, train_labels), (validation_images, validation_labels), (test_images, test_labels)
 
 def single_predict(model, args):
-    # Preprocess
     from pre_process import read_single_gray, get_name
-    import random
-
+    import  random
     path = "C:/Users/jackc/Documents/Machine Learning/Kaggle competitions/02 Car driven/imgs/test"
     file_names= os.listdir(path)
     file = random.choice(file_names)
-    
-    # randon_imgName = random.choice([
-    #     x for x in os.listdir(path)
-    #     if os.path.isfile(os.path.join(path,x))
-    # ])
 
-    # file = args.singlepredict
-
-    # # Preprocess
-    # from pre_process import read_single_gray, get_name
-    # img, img_proc = read_single_gray(path+"/"+str(randon_imgName)+file, args)
-    
+    # Preprocess
+   
     img, img_proc = read_single_gray(path+"/"+file, args)
 
     y_pred, x_recon = model.predict(img_proc, batch_size=args.batch_size)
