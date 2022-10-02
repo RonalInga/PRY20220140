@@ -1,6 +1,7 @@
 import 'package:pry_20220140/models/data_models/detection_data_model.dart';
 import 'package:pry_20220140/models/data_models/report_data_model.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:intl/intl.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _context = DatabaseHelper._privateConstructor();
@@ -39,11 +40,14 @@ class DatabaseHelper {
   // }
 
   Future<List<DetectionTotalModel>> getSummary(DateTime date) async {
-    List<Map> rawResult = await (await database).query(tableName,
-        columns: ["label", "COUNT(*) total"],
-        groupBy: "label",
-        where: "date(timestamp) = ?",
-        whereArgs: ["${date.year}-${date.month}-${date.day}"]);
+    // var formattedDate = "2022-09-24";
+    final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    List<Map> rawResult = await (await database).rawQuery("SELECT label, count(*) total FROM $tableName WHERE date(timestamp) = '$formattedDate' GROUP BY label");
+    // List<Map> rawResult = await (await database).query(tableName,
+    //     columns: ["label", "COUNT(*) as total"],
+    //     groupBy: "label",
+    //     where: "date(timestamp) = ?",
+    //     whereArgs: ["${date.year}-${date.month}-${date.day}"]);
 
     return rawResult
         .map((result) => DetectionTotalModel(result["label"], result["total"]))

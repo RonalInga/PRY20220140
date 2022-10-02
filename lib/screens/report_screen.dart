@@ -25,31 +25,41 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(alignment: Alignment.centerLeft, child: Text("Reportes")),
-          FutureBuilder(
-              future: _getDataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Image.asset("assets/images/logo_size.jpg", scale: 0.9),
+            ),
+            Container(
+                alignment: Alignment.centerLeft,
+                child: Text("Reportes",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+            FutureBuilder(
+                future: _getDataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Container(
+                      child: Text("Ocurrió un error"),
+                    );
+                  }
+      
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.hasData) {
+                    return Column(
+                      children: _buildCircularProgress(
+                          (snapshot.data as List<CircularReportViewModel>)),
+                    );
+                  }
                   return Container(
-                    child: Text("Ocurrió un error"),
+                    child: CircularProgressIndicator(),
                   );
-                }
-
-                if (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData) {
-                  return Column(
-                    children: _buildCircularProgress(
-                        (snapshot.data as List<CircularReportViewModel>)),
-                  );
-                }
-                return Container(
-                  child: CircularProgressIndicator(),
-                );
-              })
-        ],
+                })
+          ],
+        ),
       ),
     );
   }
@@ -60,11 +70,10 @@ class _ReportScreenState extends State<ReportScreen> {
     for (var circularReportViewModel in circularReportViewModelList) {
       circularProgressList.add(Container(
         margin: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
         child: CircularPercentIndicator(
           circularStrokeCap: CircularStrokeCap.round,
           radius: 120.0,
-          lineWidth: 15.0,
+          lineWidth: 25.0,
           center: new Text(
               (circularReportViewModel.accuracy * 100).toStringAsFixed(2) + "%",
               style: TextStyle(
@@ -74,9 +83,12 @@ class _ReportScreenState extends State<ReportScreen> {
           percent: circularReportViewModel.accuracy,
           backgroundColor: Colors.white,
           progressColor: circularReportViewModel.color,
-          footer: new Text(
-            circularReportViewModel.label,
-            style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 17.0),
+          footer: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: new Text(
+              circularReportViewModel.label,
+              style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 17.0),
+            ),
           ),
         ),
       ));
