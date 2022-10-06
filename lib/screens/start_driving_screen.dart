@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pry_20220140/widgets/camera_widget.dart';
+import 'package:pry_20220140/widgets/connection_ap_widget.dart';
 
 import 'alert_screen.dart';
 
@@ -14,7 +15,7 @@ class StartDrivingScreen extends StatelessWidget {
           children: [
             Expanded(
               flex: 8,
-              child: CameraWidget(
+              child: ConnectionAPWidget(
                 callback: () async => await Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (context) => AlertScreen(),
