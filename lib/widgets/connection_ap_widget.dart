@@ -53,6 +53,12 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
           return StreamBuilder(
             stream: _channel.stream,
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text("Error: " + snapshot.error.toString()),
+                );
+              }
+
               if (snapshot.hasData) {
                 process(snapshot.data as Uint8List);
                 // return Container(
@@ -91,23 +97,29 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
     //         bytesList: [_preprocessImage(imageRaw)],
     //         imageHeight: 64,
     //         imageWidth: 64)
-    Tflite.runModelOnBinary(binary: _preprocessImage(imageRaw))
-        .then((response) async {
-      print(response);
+    try {
+      Tflite.runModelOnBinary(binary: _preprocessImage(imageRaw))
+          .then((response) async {
+        print(response);
 
-      try {
-        var inference =
-            response?.where((element) => element["confidence"] >= 0.8).first;
+        try {
+          var inference =
+              response?.where((element) => element["confidence"] >= 0.8).first;
 
-        await insertToDatabase(inference);
+          await insertToDatabase(inference);
 
-        if (inference["label"] != Global.SAFE_DRIVING) {
-          await Future.value(this.widget.callback!());
+          if (inference["label"] != Global.SAFE_DRIVING) {
+            await Future.value(this.widget.callback!());
+          }
+        } catch (e) {
+          print("Error en inserción a base de datos: " + e.toString());
         }
-      } catch (e) {}
 
-      _isDetecting = false;
-    });
+        _isDetecting = false;
+      });
+    } catch (e) {
+      print("Error al procesar modelo: " + e.toString());
+    }
 
     return true;
   }
@@ -141,7 +153,7 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
       image = imglib.copyResize(image!, width: 64, height: 64);
       return _imageToByteListFloat32(image, 64, 127.5, 127.5);
     } catch (e) {
-      print(e);
+      print("Error al procesar imagen:" + e.toString());
     }
     return image!.getBytes();
   }
