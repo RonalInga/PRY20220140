@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pry_20220140/widgets/camera_widget.dart';
+// import 'package:pry_20220140/widgets/camera_widget.dart';
 import 'package:pry_20220140/widgets/connection_ap_widget.dart';
 
 import 'alert_screen.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pry_20220140/screens/calendar_screen.dart';
-import 'package:pry_20220140/screens/ip_address_screen.dart';
+import 'package:pry_20220140/screens/start_driving_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -43,7 +43,7 @@ class MainScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => IpAddressScreen(),
+                                    builder: (context) => StartDrivingScreen(),
                                     maintainState: false));
                           },
                           style: ButtonStyle(
@@ -104,49 +104,6 @@ class MainScreen extends StatelessWidget {
                                   MaterialStateProperty.all(Colors.black)),
                           child: Text(
                             'Reportes',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          )),
-                    )
-                  ],
-                ),
-              ),
-              Container(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.camera,
-                        size: 60.0,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => IpAddressScreen()));
-                          },
-                          style: ButtonStyle(
-                              elevation: MaterialStateProperty.all<double>(4.0),
-                              shadowColor: MaterialStateProperty.all<Color>(
-                                  Colors.redAccent),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              minimumSize: MaterialStateProperty.all(
-                                  Size(double.infinity, 44)),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4.0)),
-                              ),
-                              backgroundColor:
-                                  MaterialStateProperty.all(Colors.black)),
-                          child: Text(
-                            'Configuración',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
