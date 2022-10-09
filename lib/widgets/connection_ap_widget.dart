@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:pry_20220140/constants/global.dart';
 import 'package:pry_20220140/database/database_helper.dart';
 import 'package:pry_20220140/models/data_models/detection_data_model.dart';
+import 'package:pry_20220140/widgets/connection_web_socket_error_widget.dart';
 import 'package:tflite/tflite.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:image/image.dart' as imglib;
+import 'package:web_socket_channel/status.dart' as status;
 
 class ConnectionAPWidget extends StatefulWidget {
   final Function? callback;
@@ -23,6 +25,7 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
       IOWebSocketChannel.connect('ws://192.168.4.1:8888');
   bool _isDetecting = false;
   late Future<void> _initModel;
+  DateTime _initDatetime = DateTime.now();
 
   @override
   void initState() {
@@ -32,6 +35,9 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
 
   @override
   void dispose() {
+    try {
+      _channel.sink.close(status.goingAway);
+    } catch (e) {}
     Tflite.close();
     super.dispose();
   }
@@ -54,9 +60,7 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
             stream: _channel.stream,
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasError) {
-                return Center(
-                  child: Text("Error: " + snapshot.error.toString()),
-                );
+                return WebSocketConnectionErrorWidget();
               }
 
               if (snapshot.hasData) {
@@ -69,9 +73,33 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
                 //     height: 200.0,
                 //   ),
                 // );
+                if (DateTime.now().difference(_initDatetime).inMilliseconds <=
+                    2000) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi, size: 60.0),
+                        Text("Conexión Exitosa",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20.0))
+                      ],
+                    ),
+                  );
+                }
+
                 return Container(
                   alignment: Alignment.center,
-                  child: Text("Conduciendo"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on, size: 60.0),
+                      Text("Conduciendo",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20.0))
+                    ],
+                  ),
                 );
               }
 

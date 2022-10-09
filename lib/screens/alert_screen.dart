@@ -77,7 +77,7 @@ class _AlertScreenState extends State<AlertScreen> {
                         backgroundColor:
                             MaterialStateProperty.all(Colors.black)),
                     child: Text(
-                      'Culminar conducción',
+                      'Cerrar alerta',
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
