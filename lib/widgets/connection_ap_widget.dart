@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -21,16 +22,15 @@ class ConnectionAPWidget extends StatefulWidget {
 }
 
 class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
-  final WebSocketChannel _channel =
-      IOWebSocketChannel.connect('ws://192.168.4.1:8888');
+  late final WebSocketChannel _channel;
   bool _isDetecting = false;
-  late Future<void> _initModel;
+  late final Future<void> _initModel;
   DateTime _initDatetime = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _initModel = loadTensorflowModel();
+    _initModel = init();
   }
 
   @override
@@ -49,9 +49,7 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
       future: _initModel,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         if (snapshot.hasError) {
-          return Container(
-              alignment: Alignment.center,
-              child: Text("Error al cargar modelo"));
+          return WebSocketConnectionErrorWidget();
         }
 
         if (snapshot.connectionState == ConnectionState.done &&
@@ -152,6 +150,12 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
     return true;
   }
 
+  Future<bool> init() async {
+    await loadTensorflowModel();
+    await connectToWebSocket();
+    return true;
+  }
+
   Future<String> loadTensorflowModel() async {
     Tflite.close();
     String? res = await Tflite.loadModel(
@@ -161,6 +165,14 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
     // await Tflite.close();
 
     return res!;
+  }
+
+  Future<void> connectToWebSocket() async {
+    var webSocket = WebSocket.connect(
+      'ws://192.168.4.1:8888',
+    ).timeout(const Duration(seconds: 5));
+
+    _channel = IOWebSocketChannel(await webSocket);
   }
 
   Future<bool> insertToDatabase(inference) async {
