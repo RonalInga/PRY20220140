@@ -42,7 +42,7 @@ class DatabaseHelper {
   Future<List<DetectionTotalModel>> getSummary(DateTime date) async {
     // var formattedDate = "2022-09-24";
     final String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-    List<Map> rawResult = await (await database).rawQuery("SELECT label, count(*) total FROM $tableName WHERE date(timestamp) = '$formattedDate' GROUP BY label");
+    List<Map> rawResult = await (await database).rawQuery("SELECT label, count(*) total FROM $tableName WHERE date(timestamp, 'localtime') = '$formattedDate' GROUP BY label");
     // List<Map> rawResult = await (await database).query(tableName,
     //     columns: ["label", "COUNT(*) as total"],
     //     groupBy: "label",
