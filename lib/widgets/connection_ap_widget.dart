@@ -30,7 +30,9 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
   @override
   void initState() {
     super.initState();
-    _initModel = init();
+    if (this.mounted) {
+      _initModel = init();
+    }
   }
 
   @override
@@ -172,7 +174,9 @@ class _ConnectionAPWidgetState extends State<ConnectionAPWidget> {
       'ws://192.168.4.1:8888',
     ).timeout(const Duration(seconds: 5));
 
-    _channel = IOWebSocketChannel(await webSocket);
+    if (this.mounted) {
+      _channel = IOWebSocketChannel(await webSocket);
+    }
   }
 
   Future<bool> insertToDatabase(inference) async {

@@ -43,8 +43,8 @@ class MainScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => StartDrivingScreen(),
-                                    maintainState: false));
+                                    builder: (context) =>const StartDrivingScreen(),
+                                    maintainState: true));
                           },
                           style: ButtonStyle(
                               elevation: MaterialStateProperty.all<double>(4.0),
